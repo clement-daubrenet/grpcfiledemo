@@ -44,14 +44,10 @@ using std::chrono::system_clock;
 class RouteGuideImpl final : public RouteGuide::Service {
   Status FileExchange(ServerContext* context,
                    ServerReaderWriter<Content, Content>* stream) override {
-    std::vector<Content> received_contents;
     Content content;
     while (stream->Read(&content)) {
-      for (const Content& c : received_contents) {
-          std::cout << "Server received " << c.message() << std::endl;
-          stream->Write(c);
-      }
-      received_contents.push_back(content);
+      std::cout << "Server received 1 chunk... " << std::endl;
+      stream->Write(content);
     }
 
     return Status::OK;

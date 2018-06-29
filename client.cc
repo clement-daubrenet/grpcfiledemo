@@ -21,6 +21,7 @@
 #include <memory>
 #include <random>
 #include <string>
+#include <fstream>
 #include <thread>
 
 #include <grpc/grpc.h>
@@ -38,11 +39,6 @@ using grpcfiledemo::Content;
 using grpcfiledemo::RouteGuide;
 
 
-Content MakeContent(const std::string& message) {
-  Content content;
-  content.set_message(message);
-  return content;
-}
 
 class RouteGuideClient {
  public:
@@ -57,21 +53,37 @@ class RouteGuideClient {
         stub_->FileExchange(&context));
 
     std::thread writer([stream]() {
-      std::vector<Content> contents{
-        MakeContent("First message"),
-        MakeContent("Second message"),
-        MakeContent("Third message"),
-        MakeContent("Fourth message")};
-      for (const Content& content : contents) {
-        std::cout << "Sending message " << content.message() << std::endl;
-        stream->Write(content);
-      }
+
+
+   // Buffer size 1 Megabyte (or any number you like)
+   size_t buffer_size = 1<<20;
+   char *buffer = new char[buffer_size+1];
+   std::ifstream fin("data.tsv");
+   Content content;
+
+   while (fin)
+   {
+    // Try to read next chunk of data
+    fin.read(buffer, buffer_size);
+    // Get the number of bytes actually read
+    size_t count = fin.gcount();
+    Content content;
+    content.set_message(buffer);
+    stream->Write(content);
+    std::cout << buffer << std::endl;
+    // If nothing has been read, break
+    if (!count)
+        break;
+   }
+    delete[] buffer;
+
+
       stream->WritesDone();
     });
 
     Content server_content;
     while (stream->Read(&server_content)) {
-      std::cout << "Got message " << server_content.message() << std::endl;
+      std::cout << "Got 1 message " << std::endl;
     }
     writer.join();
     Status status = stream->Finish();

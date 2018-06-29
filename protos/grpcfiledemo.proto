@@ -22,5 +22,5 @@ service RouteGuide {
 
 // A string message content
 message Content{
-  string message = 1;
+  bytes message = 1;
   }
