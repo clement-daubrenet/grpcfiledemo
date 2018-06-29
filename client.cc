@@ -32,19 +32,16 @@
 
 using grpc::Channel;
 using grpc::ClientContext;
-using grpc::ClientReader;
 using grpc::ClientReaderWriter;
-using grpc::ClientWriter;
 using grpc::Status;
 using grpcfiledemo::Content;
-using grpcfiledemo::Feature;
 using grpcfiledemo::RouteGuide;
 
 
 Content MakeContent(const std::string& message) {
-  Content n;
-  n.set_message(message);
-  return n;
+  Content content;
+  content.set_message(message);
+  return content;
 }
 
 class RouteGuideClient {
@@ -53,11 +50,11 @@ class RouteGuideClient {
       : stub_(RouteGuide::NewStub(channel)) {
   }
 
-  void ChunkChat() {
+  void FileExchange() {
     ClientContext context;
 
     std::shared_ptr<ClientReaderWriter<Content, Content> > stream(
-        stub_->ChunkChat(&context));
+        stub_->FileExchange(&context));
 
     std::thread writer([stream]() {
       std::vector<Content> contents{
@@ -84,9 +81,7 @@ class RouteGuideClient {
   }
 
  private:
-
   std::unique_ptr<RouteGuide::Stub> stub_;
-  std::vector<Feature> feature_list_;
 };
 
 int main(int argc, char** argv) {
@@ -95,6 +90,6 @@ int main(int argc, char** argv) {
   RouteGuideClient guide(
       grpc::CreateChannel("localhost:50051",
                           grpc::InsecureChannelCredentials()));
-  guide.ChunkChat();
+  guide.FileExchange();
   return 0;
 }

@@ -33,11 +33,8 @@
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
-using grpc::ServerReader;
 using grpc::ServerReaderWriter;
-using grpc::ServerWriter;
 using grpc::Status;
-using grpcfiledemo::Feature;
 using grpcfiledemo::Content;
 using grpcfiledemo::RouteGuide;
 using std::chrono::system_clock;
@@ -45,7 +42,7 @@ using std::chrono::system_clock;
 
 
 class RouteGuideImpl final : public RouteGuide::Service {
-  Status ChunkChat(ServerContext* context,
+  Status FileExchange(ServerContext* context,
                    ServerReaderWriter<Content, Content>* stream) override {
     std::vector<Content> received_contents;
     Content content;
@@ -59,9 +56,6 @@ class RouteGuideImpl final : public RouteGuide::Service {
 
     return Status::OK;
   }
-
- private:
-  std::vector<Feature> feature_list_;
 };
 
 void RunServer() {
