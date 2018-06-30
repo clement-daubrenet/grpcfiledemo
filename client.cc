@@ -54,38 +54,37 @@ class RouteGuideClient {
 
     std::thread writer([stream]() {
 
+   // Definiing a buffer and open the file. We will pass send the file in bytes chunks to the server.
+   const int BUFFER_SIZE = 1024;
+   std::vector<char> buffer (BUFFER_SIZE + 1, 0);
+   std::ifstream ifile("data.tsv", std::ifstream::binary);
 
-   // Buffer size 1 Megabyte (or any number you like)
-   size_t buffer_size = 1<<20;
-   char *buffer = new char[buffer_size+1];
-   std::ifstream fin("data.tsv");
-   Content content;
-
-   while (fin)
+   // Looping on the data chunks in the file until no more data to read
+   while(1)
    {
-    // Try to read next chunk of data
-    fin.read(buffer, buffer_size);
-    // Get the number of bytes actually read
-    size_t count = fin.gcount();
-    Content content;
-    content.set_message(buffer);
+
+    // Filling a buffer with a chunk from the file
+	ifile.read(buffer.data(), BUFFER_SIZE);
+	std::streamsize s = ((ifile) ? BUFFER_SIZE : ifile.gcount());
+
+    // Log the data (test) and send it to the server
+	std::cout << "data " << buffer.data() << std::endl;
+	Content content;
+	content.set_message(buffer.data());
     stream->Write(content);
-    std::cout << buffer << std::endl;
-    // If nothing has been read, break
-    if (!count)
-        break;
-   }
-    delete[] buffer;
 
+	buffer[s] = 0;
+	if(!ifile) std::cout << "Last portion of file read successfully. " << s << " character(s) read." << std::endl;
+	if(!ifile) break;
+	}
 
-      stream->WritesDone();
+	// Close the file and the stream
+    ifile.close();
+    stream->WritesDone();
     });
-
-    Content server_content;
-    while (stream->Read(&server_content)) {
-      std::cout << "Got 1 message " << std::endl;
-    }
     writer.join();
+
+    // Error handling
     Status status = stream->Finish();
     if (!status.ok()) {
       std::cout << "RouteChat rpc failed." << std::endl;
@@ -97,8 +96,6 @@ class RouteGuideClient {
 };
 
 int main(int argc, char** argv) {
-  // Expect only arg: --db_path=path/to/route_guide_db.json.
-//  std::string db = grpcfiledemo::GetDbFileContent(argc, argv);
   RouteGuideClient guide(
       grpc::CreateChannel("localhost:50051",
                           grpc::InsecureChannelCredentials()));
