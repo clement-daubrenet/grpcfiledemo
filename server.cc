@@ -42,6 +42,10 @@ using grpcfiledemo::ParametersReply;
 using grpcfiledemo::RouteGuide;
 using std::chrono::system_clock;
 
+#include <iostream>
+#include <fstream>
+using namespace std;
+
 
 
 class RouteGuideImpl final : public RouteGuide::Service {
@@ -59,11 +63,17 @@ class RouteGuideImpl final : public RouteGuide::Service {
   Status FileExchange(ServerContext* context, ServerReaderWriter<Content, Content>* stream) override {
     Content content;
       std::ostringstream oss;
-    std::string message = "Server is receiving a file currently transferred by chunks....";
+    std::string message = "Server is currently receiving the content of a file by chunks....";
     std::cout << message << std::endl;
+
+    ofstream myfile;
+    myfile.open ("data-server.tsv");
+
+
     while (stream->Read(&content)) {
-//       std::cout << "data " << content.message() << std::endl;
+         myfile << content.message();
     }
+    myfile.close();
     return Status::OK;
   }
 };
