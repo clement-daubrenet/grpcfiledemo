@@ -98,12 +98,11 @@ class RouteGuideClient {
         // Log the data (test/debug), way faster if removed
         std::cout << "data " << buffer.data() << std::endl;
 
+        buffer[s] = 0;
+        if(!ifile) std::cout << "Last portion of file read successfully. " << s << " character(s) read." << std::endl;
         Content content;
         content.set_message(buffer.data());
         stream->Write(content);
-
-        buffer[s] = 0;
-        if(!ifile) std::cout << "Last portion of file read successfully. " << s << " character(s) read." << std::endl;
         if(!ifile) break;
 	}
 
@@ -127,7 +126,7 @@ int main(int argc, char** argv) {
   // The data to send to the server: one number, one string and a file in the current directory (can be >1GB).
   int anumber = 17;
   std::string astring = "test-string";
-  std::string filename = "data.tsv";
+  std::string filename = "data-client.tsv";
 
   // Client helper
   RouteGuideClient guide(
