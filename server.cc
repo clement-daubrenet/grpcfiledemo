@@ -21,6 +21,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 
 #include <grpc/grpc.h>
@@ -36,21 +37,38 @@ using grpc::ServerContext;
 using grpc::ServerReaderWriter;
 using grpc::Status;
 using grpcfiledemo::Content;
+using grpcfiledemo::Parameters;
+using grpcfiledemo::ParametersReply;
 using grpcfiledemo::RouteGuide;
 using std::chrono::system_clock;
 
 
 
 class RouteGuideImpl final : public RouteGuide::Service {
-  Status FileExchange(ServerContext* context,
-                   ServerReaderWriter<Content, Content>* stream) override {
+
+  Status ParametersExchange(ServerContext* context, const Parameters* parameters,
+                              ParametersReply* reply) {
+  std::ostringstream oss;
+  oss << "Server received a string: " << parameters->astring() << " and a number: " << parameters->anumber();
+  std::string message = oss.str();
+  std::cout << message << std::endl;
+  reply->set_message(message);
+  return Status::OK;}
+
+
+  Status FileExchange(ServerContext* context, ServerReaderWriter<Content, Content>* stream) override {
     Content content;
+      std::ostringstream oss;
+    std::string message = "Server is receiving a file currently transferred by chunks....";
+    std::cout << message << std::endl;
     while (stream->Read(&content)) {
-      stream->Write(content);
+//       std::cout << "data " << content.message() << std::endl;
     }
     return Status::OK;
   }
 };
+
+
 
 void RunServer() {
   std::string server_address("0.0.0.0:50051");

@@ -15,12 +15,22 @@
 syntax = "proto3";
 package grpcfiledemo;
 
-// Interface exported by the server.
+// Interfaces: one for the parameters and one for the file (content chunked and streamed).
 service RouteGuide {
+  rpc ParametersExchange (Parameters) returns (ParametersReply) {}
   rpc FileExchange (stream Content) returns (stream Content) {}
-}
+};
 
-// A string message content
+message Parameters{
+  string astring = 1;
+  int32 anumber = 2;
+  };
+
+message ParametersReply{
+ string message = 1;
+};
+
+// A chunk of file content
 message Content{
   bytes message = 1;
-  }
+  };
