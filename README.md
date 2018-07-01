@@ -1,8 +1,9 @@
 # grpcfiledemo
-GRPC file demo
 
-A minimalist client-server app: a client is sending 2 parameters (a string and a number) and a file to a server.
-The file is not sent all at once but chunked and streamed from the client to the server.
+A minimalist client-server app: a client is sending a string, a number and a file to a server.
+The string and the number are sent straight away.
+The file is not sent all at once (because of its potential size) but chunked and streamed in that format to the server
+that will re-write the file on the fly.
 
 # Steps to use the app:
 
@@ -14,3 +15,8 @@ Launch the server with:
 
 Launch the client with:
 ./client
+
+
+# Parameters
+
+

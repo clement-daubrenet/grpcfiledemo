@@ -50,6 +50,9 @@ class RouteGuideClient {
   }
 
   std::string ParametersExchange(const int& anumber, const std::string& astring) {
+
+    std::cout << "Sending the string and the number to the server ... " << std::endl;
+
     // Data we are sending to the server.
     Parameters parameters;
     parameters.set_astring(astring);
@@ -67,11 +70,12 @@ class RouteGuideClient {
 
     // Act upon its status.
     if (status.ok()) {
+      std::cout << reply.message() << std::endl;
       return reply.message();
     } else {
       std::cout << status.error_code() << ": " << status.error_message()
                 << std::endl;
-      return "RPC failed";
+      return "ParametersExchange rpc failed";
     }
   }
 
@@ -89,15 +93,13 @@ class RouteGuideClient {
     std::shared_ptr<ClientReaderWriter<Content, Content> > stream(
         stub_->FileExchange(&context));
 
+    std::cout << "Uploading the file by chunk to the server... " << std::endl;
+
     // Going through the file by chunks and send those to the server (stream)
     while(1)
     {
 	    ifile.read(buffer.data(), BUFFER_SIZE);
 	    std::streamsize s = ((ifile) ? BUFFER_SIZE : ifile.gcount());
-
-        // Log the data (test/debug), way faster if removed
-        std::cout << "data " << buffer.data() << std::endl;
-
         buffer[s] = 0;
         if(!ifile) std::cout << "Last portion of file read successfully. " << s << " character(s) read." << std::endl;
         Content content;
@@ -106,13 +108,19 @@ class RouteGuideClient {
         if(!ifile) break;
 	}
 
+	std::cout << "Done. " << std::endl;
+
 	// Close the file and the stream
     ifile.close();
     stream->WritesDone();
     // Error handling
     Status status = stream->Finish();
+
     if (!status.ok()) {
-      std::cout << "RouteChat rpc failed." << std::endl;
+      std::cout << "FileExchange rpc failed." << std::endl;
+    }
+    else{
+      std::cout << "Server returned OK." << std::endl;
     }
   }
 
