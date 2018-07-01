@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
   // The data to send to the server: one number, one string and a file in the current directory (can be >1GB).
   int anumber = 17;
   std::string astring = "test-string";
-  std::string filename = "data-client.tsv";
+  std::string filename = "client-test.txt";
 
   // Client helper
   RouteGuideClient guide(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));

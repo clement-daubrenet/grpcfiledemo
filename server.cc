@@ -66,7 +66,9 @@ class RouteGuideImpl final : public RouteGuide::Service {
     ServerReply reply;
     std::ostringstream oss;
     ofstream myfile;
-    myfile.open ("data-server.tsv");
+
+    myfile.open ("server-test.txt");
+
     while (stream->Read(&content)) {
          myfile << content.message();
     }
