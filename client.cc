@@ -34,7 +34,6 @@
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::ClientReaderWriter;
-using grpc::ClientReader;
 using grpc::Status;
 using grpcfiledemo::Content;
 using grpcfiledemo::Parameters;
@@ -51,16 +50,14 @@ class RouteGuideClient {
 
   std::string ParametersExchange(const int& anumber, const std::string& astring) {
 
-    std::cout << "Sending the string and the number to the server ... " << std::endl;
+    std::cout << "[CLIENT] Sending the string and the number to the server ... " << std::endl;
 
     // Data we are sending to the server.
     Parameters parameters;
     parameters.set_astring(astring);
     parameters.set_anumber(anumber);
-
     // Container for the data we expect from the server.
     ServerReply reply;
-
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.
     ClientContext context;
@@ -90,10 +87,10 @@ class RouteGuideClient {
     std::ifstream ifile(filename, std::ifstream::binary);
 
 
-    std::shared_ptr<ClientReaderWriter<Content, Content> > stream(
+    std::shared_ptr<ClientReaderWriter<Content, ServerReply> > stream(
         stub_->FileExchange(&context));
 
-    std::cout << "Uploading the file by chunk to the server... " << std::endl;
+    std::cout << "[CLIENT] Sending the file by chunk to the server... " << std::endl;
 
     // Going through the file by chunks and send those to the server (stream)
     while(1)
@@ -101,26 +98,22 @@ class RouteGuideClient {
 	    ifile.read(buffer.data(), BUFFER_SIZE);
 	    std::streamsize s = ((ifile) ? BUFFER_SIZE : ifile.gcount());
         buffer[s] = 0;
-        if(!ifile) std::cout << "Last portion of file read successfully. " << s << " character(s) read." << std::endl;
         Content content;
         content.set_message(buffer.data());
         stream->Write(content);
         if(!ifile) break;
 	}
-
-	std::cout << "Done. " << std::endl;
-
-	// Close the file and the stream
     ifile.close();
     stream->WritesDone();
-    // Error handling
+
+    ServerReply server_reply;
+    while (stream->Read(&server_reply)) {
+      std::cout << server_reply.message() << std::endl;
+    }
     Status status = stream->Finish();
 
     if (!status.ok()) {
       std::cout << "FileExchange rpc failed." << std::endl;
-    }
-    else{
-      std::cout << "Server returned OK." << std::endl;
     }
   }
 
@@ -130,16 +123,13 @@ class RouteGuideClient {
 
 int main(int argc, char** argv) {
 
-
   // The data to send to the server: one number, one string and a file in the current directory (can be >1GB).
   int anumber = 17;
   std::string astring = "test-string";
   std::string filename = "data-client.tsv";
 
   // Client helper
-  RouteGuideClient guide(
-      grpc::CreateChannel("localhost:50051",
-                          grpc::InsecureChannelCredentials()));
+  RouteGuideClient guide(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
 
   // Send the parameters to the server.
   guide.ParametersExchange(anumber, astring);

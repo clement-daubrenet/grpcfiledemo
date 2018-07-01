@@ -53,27 +53,32 @@ class RouteGuideImpl final : public RouteGuide::Service {
   Status ParametersExchange(ServerContext* context, const Parameters* parameters,
                               ServerReply* reply) {
   std::ostringstream oss;
-  oss << "Server received a string: " << parameters->astring() << " and a number: " << parameters->anumber();
+  oss << "[SERVER] ...Received a string: " << parameters->astring() << " and a number: " << parameters->anumber();
   std::string message = oss.str();
   std::cout << message << std::endl;
   reply->set_message(message);
   return Status::OK;}
 
 
-  Status FileExchange(ServerContext* context, ServerReaderWriter<Content, Content>* stream) override {
+  Status FileExchange(ServerContext* context, ServerReaderWriter<ServerReply, Content>* stream) override {
     Content content;
-      std::ostringstream oss;
-    std::string message = "Server is currently receiving the content of a file by chunks....";
-    std::cout << message << std::endl;
-
+    std::vector<ServerReply> replies;
+    ServerReply reply;
+    std::ostringstream oss;
     ofstream myfile;
     myfile.open ("data-server.tsv");
-
-
     while (stream->Read(&content)) {
          myfile << content.message();
     }
     myfile.close();
+
+
+    // Send a message to the server to say that the file is correctly hosted.
+    std::string message = "[SERVER] ...Finished to host the file";
+    reply.set_message(message);
+    stream->Write(reply);
+    replies.push_back(reply);
+
     return Status::OK;
   }
 };
