@@ -38,7 +38,7 @@ using grpc::ClientReader;
 using grpc::Status;
 using grpcfiledemo::Content;
 using grpcfiledemo::Parameters;
-using grpcfiledemo::ParametersReply;
+using grpcfiledemo::ServerReply;
 using grpcfiledemo::RouteGuide;
 
 
@@ -59,7 +59,7 @@ class RouteGuideClient {
     parameters.set_anumber(anumber);
 
     // Container for the data we expect from the server.
-    ParametersReply reply;
+    ServerReply reply;
 
     // Context for the client. It could be used to convey extra information to
     // the server and/or tweak certain RPC behaviors.

@@ -38,7 +38,7 @@ using grpc::ServerReaderWriter;
 using grpc::Status;
 using grpcfiledemo::Content;
 using grpcfiledemo::Parameters;
-using grpcfiledemo::ParametersReply;
+using grpcfiledemo::ServerReply;
 using grpcfiledemo::RouteGuide;
 using std::chrono::system_clock;
 
@@ -51,7 +51,7 @@ using namespace std;
 class RouteGuideImpl final : public RouteGuide::Service {
 
   Status ParametersExchange(ServerContext* context, const Parameters* parameters,
-                              ParametersReply* reply) {
+                              ServerReply* reply) {
   std::ostringstream oss;
   oss << "Server received a string: " << parameters->astring() << " and a number: " << parameters->anumber();
   std::string message = oss.str();

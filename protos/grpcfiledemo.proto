@@ -17,7 +17,7 @@ package grpcfiledemo;
 
 // Interfaces: one for the parameters and one for the file (content chunked and streamed).
 service RouteGuide {
-  rpc ParametersExchange (Parameters) returns (ParametersReply) {}
+  rpc ParametersExchange (Parameters) returns (ServerReply) {}
   rpc FileExchange (stream Content) returns (stream Content) {}
 };
 
@@ -26,7 +26,7 @@ message Parameters{
   int32 anumber = 2;
   };
 
-message ParametersReply{
+message ServerReply{
  string message = 1;
 };
 
