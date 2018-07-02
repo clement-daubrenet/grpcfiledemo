@@ -20,17 +20,38 @@ Launch the client with:
 # Parameters
 
 
-The input parameters are hardcoded (I didn't think it was the point of the task to pass them dynamically/validate them).
+The input parameters are hardcoded.
 They are specified in the main of the client.cc:
 
 int anumber = 17;
 std::string astring = "test-string";
-std::string filename = "data-client.tsv";
+std::string filename = "client-text.txt";
 
 
-Here, we send 17, "test-string" and a file called "data-client.tsv".
-This file is a test case I got from IMDB database (around 500Mb).
-See: https://datasets.imdbws.com/
+Here, we send 17, "test-string" and a file called "client-text.txt".
 This file should be in the local directory.
+The file server side will be created under the name "server-text.txt".
 
-The file server side will be created under the name "data-server.tsv".
+
+# How I tested
+
+- Manual tests with files I got from IMDB database (around 500Mb).
+See: https://datasets.imdbws.com/.
+It worked well.
+
+- Automated test with a Python script.
+I start the client and server with a thread anf check that I get the right sequence of signals (logs).
+
+
+# To do better...
+
+A LOT of things could be improved with more time, I might work on them soon.
+A todo list:
+
+- Dynamic parameters (string number and file passed when calling the script)
+- Validation of this parameters and error handling (if file not present, etc)
+- Handling of concurrency, I think this version is blocking for now.
+- Unit tests: write some with mocks (just like the other task in Python, but I'm less comfortable with C++)
+- End to end automated tests: check that the 2 files (server/client) are strictly identical (so far I checked it manually in command line)
+- End to end automated tests: Handle the thread better (not killed properly) in the test.
+- Use the stream server->client of the file transfer to display a progression bar client side during the upload.
