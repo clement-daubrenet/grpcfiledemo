@@ -23,6 +23,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <fstream>
 
 #include <grpc/grpc.h>
 #include <grpcpp/server.h>
@@ -30,8 +31,6 @@
 #include <grpcpp/server_context.h>
 #include <grpcpp/security/server_credentials.h>
 #include "grpcfiledemo.grpc.pb.h"
-#include <iostream>
-#include <fstream>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -42,7 +41,6 @@ using grpcfiledemo::Content;
 using grpcfiledemo::Parameters;
 using grpcfiledemo::ServerReply;
 using grpcfiledemo::RouteGuide;
-using namespace std;
 
 
 
@@ -66,7 +64,7 @@ class RouteGuideImpl final : public RouteGuide::Service {
     std::vector<ServerReply> replies;
     ServerReply reply;
     std::ostringstream oss;
-    ofstream myfile;
+    std::ofstream myfile;
 
     // Creating (hardcoded name...) a file based on the chunks sent by the client.
     myfile.open ("server-test.txt");
@@ -78,7 +76,7 @@ class RouteGuideImpl final : public RouteGuide::Service {
     myfile.close();
 
 
-    // Send a message to the server to say that everything went well.
+    // Send a message back to the client to say that everything went well.
     std::string message = "[SERVER] ...Finished to host the file";
     reply.set_message(message);
     stream->Write(reply);

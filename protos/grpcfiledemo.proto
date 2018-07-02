@@ -15,22 +15,27 @@
 syntax = "proto3";
 package grpcfiledemo;
 
-// Interfaces: one for the parameters and one for the file (content chunked and streamed).
+// Interfaces: one for the parameters and one for the file.
+// Here I keep a stream for the ServerReply of the FileExchange because it could be useful to communicate a realtime
+//
 service RouteGuide {
   rpc ParametersExchange (Parameters) returns (ServerReply) {}
   rpc FileExchange (stream Content) returns (stream ServerReply) {}
 };
 
+
+// The parameters passed to the server (specified in the task description): an integer and a string.
 message Parameters{
   string astring = 1;
   int32 anumber = 2;
   };
 
-message ServerReply{
- string message = 1;
-};
-
-// A chunk of file content
+// A chuncked content of the file passed to the server (specified in the task description)
 message Content{
   bytes message = 1;
   };
+
+// The message that the server will send back to the client once done.
+message ServerReply{
+ string message = 1;
+};
