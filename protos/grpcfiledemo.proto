@@ -17,7 +17,7 @@ package grpcfiledemo;
 
 // Interfaces: one for the parameters and one for the file.
 // Here I keep a stream for the ServerReply of the FileExchange because it could be useful to communicate a realtime
-//
+// progress bar to the client.
 service RouteGuide {
   rpc ParametersExchange (Parameters) returns (ServerReply) {}
   rpc FileExchange (stream Content) returns (stream ServerReply) {}
