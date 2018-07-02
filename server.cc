@@ -30,6 +30,8 @@
 #include <grpcpp/server_context.h>
 #include <grpcpp/security/server_credentials.h>
 #include "grpcfiledemo.grpc.pb.h"
+#include <iostream>
+#include <fstream>
 
 using grpc::Server;
 using grpc::ServerBuilder;
@@ -40,16 +42,14 @@ using grpcfiledemo::Content;
 using grpcfiledemo::Parameters;
 using grpcfiledemo::ServerReply;
 using grpcfiledemo::RouteGuide;
-using std::chrono::system_clock;
-
-#include <iostream>
-#include <fstream>
 using namespace std;
 
 
 
 class RouteGuideImpl final : public RouteGuide::Service {
 
+
+  // Service to receive the parameters (number and string) sent by the client.
   Status ParametersExchange(ServerContext* context, const Parameters* parameters,
                               ServerReply* reply) {
   std::ostringstream oss;
@@ -60,6 +60,7 @@ class RouteGuideImpl final : public RouteGuide::Service {
   return Status::OK;}
 
 
+  // Service to receive the file (by chunks) sent by the client. It's a stream.
   Status FileExchange(ServerContext* context, ServerReaderWriter<ServerReply, Content>* stream) override {
     Content content;
     std::vector<ServerReply> replies;
@@ -67,15 +68,17 @@ class RouteGuideImpl final : public RouteGuide::Service {
     std::ostringstream oss;
     ofstream myfile;
 
+    // Creating (hardcoded name...) a file based on the chunks sent by the client.
     myfile.open ("server-test.txt");
-
     while (stream->Read(&content)) {
          myfile << content.message();
     }
+
+    // Done. The file is uploaded, we can close it.
     myfile.close();
 
 
-    // Send a message to the server to say that the file is correctly hosted.
+    // Send a message to the server to say that everything went well.
     std::string message = "[SERVER] ...Finished to host the file";
     reply.set_message(message);
     stream->Write(reply);
@@ -86,22 +89,19 @@ class RouteGuideImpl final : public RouteGuide::Service {
 };
 
 
-
 void RunServer() {
   std::string server_address("0.0.0.0:50051");
   RouteGuideImpl service;
-
   ServerBuilder builder;
   builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
   builder.RegisterService(&service);
   std::unique_ptr<Server> server(builder.BuildAndStart());
   std::cout << "Server listening on " << server_address << std::endl;
-
   server->Wait();
 }
 
 int main(int argc, char** argv) {
+  // Running the server and starting the listeners
   RunServer();
-
   return 0;
 }

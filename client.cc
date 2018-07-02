@@ -28,7 +28,6 @@
 #include <grpcpp/channel.h>
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
-#include <grpcpp/security/credentials.h>
 #include "grpcfiledemo.grpc.pb.h"
 
 using grpc::Channel;
@@ -48,6 +47,7 @@ class RouteGuideClient {
       : stub_(RouteGuide::NewStub(channel)) {
   }
 
+  // The exchange service for 2 first parameters of the task: the number and the string.
   std::string ParametersExchange(const int& anumber, const std::string& astring) {
 
     std::cout << "[CLIENT] Sending the string and the number to the server ... " << std::endl;
@@ -56,16 +56,17 @@ class RouteGuideClient {
     Parameters parameters;
     parameters.set_astring(astring);
     parameters.set_anumber(anumber);
+
     // Container for the data we expect from the server.
     ServerReply reply;
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
+
+    // Context for the client
     ClientContext context;
 
     // The actual RPC.
     Status status = stub_->ParametersExchange(&context, parameters, &reply);
 
-    // Act upon its status.
+    // Act upon status and if valid, response from the server.
     if (status.ok()) {
       std::cout << reply.message() << std::endl;
       return reply.message();
@@ -77,22 +78,21 @@ class RouteGuideClient {
   }
 
 
-
+  // The exchange service for large file we want to pass to the server.
   void FileExchange(const std::string& filename) {
     ClientContext context;
 
-    // Defining a buffer and open the file. We will send the file content in bytes chunks to the server.
+    std::cout << "[CLIENT] Sending the file by chunk to the server... " << std::endl;
+
+    // Defining a buffer and open the file. We will send the file content in chunks to the server.
     const int BUFFER_SIZE = 1024;
     std::vector<char> buffer (BUFFER_SIZE + 1, 0);
     std::ifstream ifile(filename, std::ifstream::binary);
 
-
     std::shared_ptr<ClientReaderWriter<Content, ServerReply> > stream(
         stub_->FileExchange(&context));
 
-    std::cout << "[CLIENT] Sending the file by chunk to the server... " << std::endl;
-
-    // Going through the file by chunks and send those to the server (stream)
+    // Going through the file, filling the buffer, and streaming it by piece/chunk of 1024 bytes.
     while(1)
     {
 	    ifile.read(buffer.data(), BUFFER_SIZE);
@@ -103,15 +103,21 @@ class RouteGuideClient {
         stream->Write(content);
         if(!ifile) break;
 	}
+
+	// Closing the file.
     ifile.close();
     stream->WritesDone();
 
+    // Container for the data we expect from the server.
     ServerReply server_reply;
+
+    // Server reply if any.
     while (stream->Read(&server_reply)) {
       std::cout << server_reply.message() << std::endl;
     }
     Status status = stream->Finish();
 
+    // Act upon status
     if (!status.ok()) {
       std::cout << "FileExchange rpc failed." << std::endl;
     }
@@ -120,6 +126,8 @@ class RouteGuideClient {
  private:
   std::unique_ptr<RouteGuide::Stub> stub_;
 };
+
+
 
 int main(int argc, char** argv) {
 
@@ -138,4 +146,5 @@ int main(int argc, char** argv) {
   guide.FileExchange(filename);
 
   return 0;
+
 }
