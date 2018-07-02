@@ -40,7 +40,7 @@ See: https://datasets.imdbws.com/.
 It worked well.
 
 - Automated test with a Python script.
-I start the client and server with a thread anf check that I get the right sequence of signals (logs).
+I start the client and server with a thread and check that I get the right sequence of signals (logs).
 To launch the little test:
 
   - cd tests
