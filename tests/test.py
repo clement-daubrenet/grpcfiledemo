@@ -1,8 +1,5 @@
 from threading import Thread
 import subprocess
-import sys
-
-SERVER_TIMEOUT_SECONDS = 15
 
 
 def server():
@@ -16,9 +13,10 @@ if __name__ == '__main__':
     out, err = client.communicate()
 
     # Checking that the client and the server return the right signals (parameters and file sent and received)
-
     assert out == b'[CLIENT] Sending the string and the number to the server ... \n' \
                   b'[SERVER] ...Received a string: test-string and a number: 17\n' \
                   b'[CLIENT] Sending the file by chunk to the server... \n' \
                   b'[SERVER] ...Finished to host the file\n'
-    sys.exit()
+    print('Test OK')
+    server.join()
+    client.kill()
